@@ -3,1337 +3,491 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transaction Manager</title>
-   
+    <title>Excel Report Processor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <!-- jsPDF + autoTable for PDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
-       
-        :root {
-            --primary: #2266e3;
-            --primary-dark: #1a56c7;
-            --secondary: #6b7280;
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --light-bg: #f9fafb;
-            --border: #e5e7eb;
-            --text: #374151;
-            --text-light: #6b7280;
-        }
-        
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
+
         body {
-            background-color: #f5f7fa;
-            color: var(--text);
+            background-color: #f9fcff;
+            color: #333;
             line-height: 1.6;
-            padding: 20px;
-             
         }
-        
+
         .container {
-            max-width: 1800px;
+            max-width: 100%;
             margin: 0 auto;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
-            overflow: hidden;
+            padding: 20px;
         }
-        
+
         header {
+            background: linear-gradient(135deg, #1565C0, #0D47A1);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo i {
+            font-size: 32px;
+            color: #2196F3;
+        }
+
+        .logo h1 {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .upload-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto 30px;
+        }
+
+        .upload-section {
             background: white;
-            color: var(--text);
-            padding: 20px 25px;
-            border-bottom: 1px solid var(--border);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .upload-area {
+            border: 2px dashed #2196F3;
+            border-radius: 8px;
+            padding: 40px 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+            background-color: #f9fcff;
+        }
+
+        .upload-area:hover {
+            background-color: #e3f2fd;
+            border-color: #1976D2;
+        }
+
+        .upload-area.red-border {
+            border-color: #f44336;
+        }
+
+        .upload-area.red-border:hover {
+            background-color: #ffebee;
+            border-color: #d32f2f;
+        }
+
+        .upload-area i {
+            font-size: 48px;
+            color: #2196F3;
+            margin-bottom: 15px;
+        }
+
+        .upload-area.red-border i {
+            color: #f44336;
+        }
+
+        .upload-area h3 {
+            margin-bottom: 10px;
+            color: #0D47A1;
+        }
+
+        .upload-area.red-border h3 {
+            color: #d32f2f;
+        }
+
+        .upload-area p {
+            color: #5f6368;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .btn.red-btn {
+            background: #f44336;
+        }
+
+        .btn.red-btn:hover {
+            background: #d32f2f;
+        }
+
+        .btn:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn i {
+            margin-right: 8px;
+        }
+
+        .results-section {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .results-header {
+            background: linear-gradient(135deg, #1565C0, #0D47A1);
+            color: white;
+            padding: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .logo-icon {
-            width: 32px;
-            height: 32px;
-            background: var(--primary);
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-        }
-        
-        h1 {
+
+        .results-header h2 {
             font-size: 22px;
-            font-weight: 600;
         }
-        
-        .header-actions {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .content {
-            padding: 25px;
-        }
-        
-        .input-section {
-            margin-bottom: 25px;
-            background: var(--light-bg);
+
+        .results-content {
             padding: 20px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
+            max-height: 600px;
+            overflow-y: auto;
         }
-        
-        .input-section h2 {
-            font-size: 16px;
-            margin-bottom: 15px;
-            color: var(--text);
-            font-weight: 600;
-        }
-        
-        textarea {
-            width: 100%;
-            height: 160px;
-            padding: 15px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 14px;
-            resize: vertical;
-            font-family: monospace;
-            background: white;
-            transition: border-color 0.2s;
-        }
-        
-        textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(34, 102, 227, 0.1);
-        }
-        
-        .buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            flex-wrap: wrap;
-        }
-        
-        button {
-            padding: 10px 18px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .btn-primary {
-            background-color: var(--primary);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background-color: var(--primary-dark);
-        }
-        
-        .btn-secondary {
-            background-color: white;
-            color: var(--text);
-            border: 1px solid var(--border);
-        }
-        
-        .btn-secondary:hover {
-            background-color: var(--light-bg);
-        }
-        
-        .btn-danger {
-            background-color: var(--danger);
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            background-color: #dc2626;
-        }
-        
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 12px 20px;
-            border-radius: 6px;
-            color: white;
-            font-weight: 500;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-        }
-        
-        .notification.show {
-            transform: translateX(0);
-        }
-        
-        .notification.success {
-            background-color: var(--success);
-        }
-        
-        .notification.error {
-            background-color: var(--danger);
-        }
-        
-        .result-section h2 {
-            margin-bottom: 18px;
-            color: var(--text);
-            font-size: 18px;
-            font-weight: 600;
-        }
-        
-        .transaction-table {
+
+        table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 18px;
-            font-size: 13px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            margin-top: 15px;
         }
-        
-        .transaction-table th {
-            background-color: #f8fafc;
-            color: var(--text);
-            text-align: center;
-            padding: 12px 10px;
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            background-color: #f5faff;
+            color: #0D47A1;
+            font-weight: 600;
             position: sticky;
             top: 0;
-            white-space: nowrap;
-            border: 1px solid var(--border);
-            font-weight: 600;
         }
-        
-        .transaction-table td {
-            padding: 10px 10px;
-            border-bottom: 1px solid var(--border);
-            max-width: 180px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            text-align: center;
-            border: 1px solid var(--border);
+
+        tr:hover {
+            background-color: #f5faff;
         }
-        
-        .transaction-table tr:nth-child(even) {
-            background-color: var(--light-bg);
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
         }
-        
-        .transaction-table tr:hover {
-            background-color: #f3f4f6;
-        }
-        
-        .status-badge {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 500;
-        }
-        
-        .status-paid {
-            background-color: #dcfce7;
-            color: #166534;
-        }
-        
-        .status-hold {
-            background-color: #fee2e2;
-            color: #991b1b;
-        }
-        
-        .status-compliance {
-            background-color: #fef3c7;
-            color: #92400e;
-        }
-        
-        .status-api {
-            background-color: #dbeafe;
-            color: #1e40af;
-        }
-        
-        .status-posted {
-            background-color: #e5e7eb;
-            color: #374151;
-        }
-        
-        .amount {
-            font-weight: 500;
-            color: var(--text);
-        }
-        
-        .storage-info {
-            margin-top: 18px;
-            padding: 12px;
-            background-color: #f8fafc;
-            border-radius: 6px;
-            text-align: center;
-            font-size: 14px;
-            border: 1px solid var(--border);
-            color: var(--text-light);
-        }
-        
-        .table-container {
-            overflow-x: auto;
-            max-height: 500px;
-            overflow-y: auto;
-            border: 1px solid var(--border);
+
+        .stat-box {
+            background: #f9fcff;
+            padding: 15px;
             border-radius: 8px;
+            text-align: center;
+            border-left: 4px solid #2196F3;
         }
-        
-        .pagination {
-            display: flex;
-            justify-content: center;
-            margin-top: 18px;
-            gap: 8px;
-            align-items: center;
+
+        .stat-box h3 {
+            font-size: 14px;
+            color: #5f6368;
+            margin-bottom: 8px;
         }
-        
-        .pagination button {
-            padding: 6px 12px;
-            background-color: white;
-            color: var(--text);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
+
+        .stat-box p {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0D47A1;
         }
-        
-        .pagination button.active {
-            background-color: var(--primary);
-            color: white;
-            border-color: var(--primary);
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #5f6368;
+            font-size: 14px;
         }
-        
-        .pagination button:hover:not(.active) {
-            background-color: var(--light-bg);
-        }
-        
-        .pagination-info {
-            font-size: 13px;
-            color: var(--text-light);
-            margin: 0 10px;
-        }
-        
-        .action-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-        
-        .action-btn {
-            padding: 5px 10px;
-            font-size: 12px;
-            border-radius: 4px;
-            border: none;
-            cursor: pointer;
-        }
-        
-        .view-btn {
-            background-color: var(--primary);
-            color: white;
-        }
-        
-        .delete-btn {
-            background-color: var(--danger);
-            color: white;
-        }
-        
-        @media (max-width: 1200px) {
-            .transaction-table {
-                font-size: 12px;
+
+        @media (max-width: 900px) {
+            .upload-wrapper {
+                grid-template-columns: 1fr;
             }
             
-            .transaction-table th, 
-            .transaction-table td {
-                padding: 8px 8px;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .buttons {
-                flex-direction: column;
-            }
-            
-            button {
-                width: 100%;
-            }
-            
-            .pagination {
-                flex-wrap: wrap;
-            }
-            
-            .content {
-                padding: 15px;
-            }
-            
-            .input-section {
-                padding: 15px;
-            }
-            
-            header {
-                flex-direction: column;
-                gap: 15px;
-                align-items: flex-start;
-            }
-            
-            .header-actions {
-                width: 100%;
-                justify-content: space-between;
+            .stats {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div class="logo">
-                <div class="logo-icon">T</div>
-                <h1>Transaction Manager</h1>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-file-excel"></i>
+                    <h1>Excel Report Processor</h1>
+                </div>
             </div>
-            <div class="header-actions">
-                <div id="storageInfo">No transactions stored</div>
-            </div>
-        </header>
-        
-        <div class="content">
-            <div class="input-section">
-                <h2>Paste Transaction Text Content</h2>
-                <textarea id="pdfText" placeholder="Paste transaction text content here..."></textarea>
-                
-                <div class="buttons">
-                    <button id="extractBtn" class="btn-primary">
-                        <span>Extract Details</span>
-                    </button>
-                    <button id="resetBtn" class="btn-secondary">
-                        <span>Reset</span>
-                    </button>
-                    <button id="clearStorageBtn" class="btn-danger">
-                        <span>Clear All Data</span>
-                    </button>
+        </div>
+    </header>
 
-                    <button id="exportExcelBtn" class="btn-primary">Export to Excel</button>
-                    <button id="exportPDFBtn" class="btn-primary">Export to PDF</button>
+    <div class="container">
+        <div class="upload-wrapper">
+            <div class="upload-section">
+                <div class="upload-area red-border" id="wadiDropZone">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h3>Upload Wadi Excel File</h3>
+                    <p>Drag & drop your file here or click to browse</p>
+                    <input type="file" id="wadiFileInput" accept=".xlsx, .xls" hidden>
+                    <button class="btn red-btn" onclick="document.getElementById('wadiFileInput').click()">
+                        <i class="fas fa-upload"></i> Browse Files
+                    </button>
                 </div>
             </div>
-            
-            <div class="result-section">
-                <h2>Transaction Details</h2>
-                
-                <div class="table-container">
-                    <table class="transaction-table" id="resultsTable">
-                        <thead>
-                            <tr>
-                                <th>S.No</th>
-                                <th>Pin No</th>
-                                <th>Transaction ID</th>
-                                <th>Confirmation ID</th>
-                                <th>Status</th>
-                                <th>Partner Name</th>
-                                <th>Payout Partner</th>
-                                <th>DeliveryMode</th>
-                                <th>Paid By</th>
-                                <th>Sender Name</th>
-                                <th>Customer ID</th>
-                                <th>Order No</th>
-                                <th>Collected Amount</th>
-                                <th>Service Fee</th>
-                                <th>Transfer Amount</th>
-                                <th>Customer Rate</th>
-                                <th>Payout Amount</th>
-                                <th>Serial No</th>
-                                <th>Deposit Type</th>
-                                <th>Address</th>
-                                <th>ID Type</th>
-                                <th>ID Number</th>
-                                <th>ID Expiry Date</th>
-                                <th>ID Issue Country</th>
-                                <th>Date Of Birth</th>
-                                <th>Occupation</th>
-                                <th>Mobile Number</th>
-                                <th>Relationship</th>
-                                <th>Gender</th>
-                                <th>Nationality</th>
-                                <th>Source Of Fund</th>
-                                <th>Payout Country</th>
-                                <th>Beneficiary Name</th>
-                                <th>Beneficiary Mobile Number</th>
-                                <th>Bank Name</th>
-                                <th>Bank Account No</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="results">
-                            <!-- Results will be populated here -->
-                        </tbody>
-                    </table>
+
+            <div class="upload-section">
+                <div class="upload-area" id="majiDropZone">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h3>Upload Maji Excel File</h3>
+                    <p>Drag & drop your file here or click to browse</p>
+                    <input type="file" id="majiFileInput" accept=".xlsx, .xls" hidden>
+                    <button class="btn" onclick="document.getElementById('majiFileInput').click()">
+                        <i class="fas fa-upload"></i> Browse Files
+                    </button>
                 </div>
-                
-                <div class="pagination" id="pagination">
-                    <!-- Pagination buttons will be added here -->
+            </div>
+        </div>
+
+        <div class="results-section">
+            <div class="results-header">
+                <h2>Processed Data</h2>
+                <div>
+                    <span id="rowCount">0 rows</span>
+                    <button class="btn" id="exportBtn" style="margin-left: 10px;"><i class="fas fa-download"></i> Export to Excel</button>
                 </div>
+            </div>
+            <div class="results-content">
+                <div class="stats">
+                    <div class="stat-box">
+                        <h3>Wadi Count</h3>
+                        <p id="wadiCount">0</p>
+                    </div>
+                    <div class="stat-box">
+                        <h3>Maji Count</h3>
+                        <p id="majiCount">0</p>
+                    </div>
+                    <div class="stat-box">
+                        <h3>Total Count</h3>
+                        <p id="totalCount">0</p>
+                    </div>
+                </div>
+                <div id="tableContainer"></div>
             </div>
         </div>
     </div>
 
-    <div id="notification" class="notification">
-        <span id="notification-message"></span>
-    </div>
+    <footer>
+        <div class="container">
+            <p>Thank you</p>
+        </div>
+    </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const extractBtn = document.getElementById('extractBtn');
-            const resetBtn = document.getElementById('resetBtn');
-            const clearStorageBtn = document.getElementById('clearStorageBtn');
-            const exportExcelBtn = document.getElementById('exportExcelBtn');
-            const exportPDFBtn = document.getElementById('exportPDFBtn');
-            const pdfText = document.getElementById('pdfText');
-            const results = document.getElementById('results');
-            const storageInfo = document.getElementById('storageInfo');
-            const pagination = document.getElementById('pagination');
-            const notification = document.getElementById('notification');
-            const notificationMessage = document.getElementById('notification-message');
-            
-            let currentPage = 1;
-            const rowsPerPage = 50;
-            let allTransactions = [];
-            
-            // Load transactions from local storage on page load
-            loadTransactionsFromStorage();
-            
-            // Extract details when the button is clicked
-            extractBtn.addEventListener('click', function() {
-                const text = pdfText.value;
-                if (!text.trim()) {
-                    showNotification('Please paste transaction text content first.', 'error');
-                    return;
-                }
-                
-                const transactionData = extractTransactionDetails(text);
-                if (transactionData) {
-                    const isNew = saveTransactionToStorage(transactionData);
-                    if (isNew) {
-                        pdfText.value = ''; // Clear the textarea
-                        showNotification('Transaction details extracted successfully!', 'success');
-                    }
-                    loadTransactionsFromStorage();
+            const wadiFileInput = document.getElementById('wadiFileInput');
+            const wadiDropZone = document.getElementById('wadiDropZone');
+            const majiFileInput = document.getElementById('majiFileInput');
+            const majiDropZone = document.getElementById('majiDropZone');
+            const tableContainer = document.getElementById('tableContainer');
+            const rowCount = document.getElementById('rowCount');
+            const wadiCountEl = document.getElementById('wadiCount');
+            const majiCountEl = document.getElementById('majiCount');
+            const totalCountEl = document.getElementById('totalCount');
+            const exportBtn = document.getElementById('exportBtn');
+            let wadiData = [];
+            let majiData = [];
+            let exportData = [];
+
+            wadiFileInput.addEventListener('change', function(e) {
+                processExcelFile(e.target.files[0], 'wadi');
+            });
+
+            wadiDropZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                wadiDropZone.style.backgroundColor = '#ffebee';
+            });
+
+            wadiDropZone.addEventListener('dragleave', function() {
+                wadiDropZone.style.backgroundColor = '#f9fcff';
+            });
+
+            wadiDropZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                wadiDropZone.style.backgroundColor = '#f9fcff';
+                if (e.dataTransfer.files.length) {
+                    processExcelFile(e.dataTransfer.files[0], 'wadi');
                 }
             });
-            
-            // Export table to Excel
-            exportExcelBtn.addEventListener('click', function() {
-                if (allTransactions.length === 0) {
-                    showNotification('No transactions to export.', 'error');
-                    return;
+
+            majiFileInput.addEventListener('change', function(e) {
+                processExcelFile(e.target.files[0], 'maji');
+            });
+
+            majiDropZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                majiDropZone.style.backgroundColor = '#e3f2fd';
+            });
+
+            majiDropZone.addEventListener('dragleave', function() {
+                majiDropZone.style.backgroundColor = '#f9fcff';
+            });
+
+            majiDropZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                majiDropZone.style.backgroundColor = '#f9fcff';
+                if (e.dataTransfer.files.length) {
+                    processExcelFile(e.dataTransfer.files[0], 'maji');
                 }
-                
-                // Create a new workbook
+            });
+
+            exportBtn.addEventListener('click', function() {
+                if (exportData.length === 0) return;
+                const ws = XLSX.utils.aoa_to_sheet(exportData);
                 const wb = XLSX.utils.book_new();
-                
-                // Prepare data for Excel
-                const excelData = allTransactions.map(transaction => {
-                    return {
-                        'S.No': allTransactions.indexOf(transaction) + 1,
-                        'Pin No': transaction['Pin No'] || '-',
-                        'Transaction ID': transaction['Transaction ID'] || '-',
-                        'Confirmation ID': transaction['Confirmation ID'] || '-',
-                        'Status': transaction['Status'] || '-',
-                        'Partner Name': transaction['Partner Name'] || '-',
-                        'Payout Partner': transaction['Payout Partner'] || '-',
-                        'DeliveryMode': transaction['DeliveryMode'] || '-',
-                        'Paid By': transaction['Paid By'] || '-',
-                        'Sender Name': transaction['Sender Name'] || '-',
-                        'Customer ID': transaction['Customer ID'] || '-',
-                        'Order No': transaction['Order No'] || '-',
-                        'Collected Amount': transaction['Collected Amount'] || '-',
-                        'Service Fee': transaction['Service Fee'] || '-',
-                        'Transfer Amount': transaction['Transfer Amount'] || '-',
-                        'Customer Rate': transaction['Customer Rate'] || '-',
-                        'Payout Amount': transaction['Payout Amount'] || '-',
-                        'Serial No': transaction['SerialNo'] || '-',
-                        'Deposit Type': transaction['DepositType'] || '-',
-                        'Address': transaction['Address'] || '-',
-                        'ID Type': transaction['ID Type'] || '-',
-                        'ID Number': transaction['ID Number'] || '-',
-                        'ID Expiry Date': transaction['ID Expiry Date'] || '-',
-                        'ID Issue Country': transaction['ID Issue Country'] || '-',
-                        'Date Of Birth': transaction['Date Of Birth'] || '-',
-                        'Occupation': transaction['Occupation'] || '-',
-                        'Mobile Number': transaction['Mobile Number'] || '-',
-                        'Relationship': transaction['Relationship'] || '-',
-                        'Gender': transaction['Gender'] || '-',
-                        'Nationality': transaction['Nationality'] || '-',
-                        'Source Of Fund': transaction['Source Of Fund'] || '-',
-                        'Payout Country': transaction['Payout Country'] || '-',
-                        'Beneficiary Name': transaction['Beneficiary Name'] || '-',
-                        'Beneficiary Mobile Number': transaction['Beneficiary Mobile Number'] || '-',
-                        'Bank Name': transaction['Bank Name'] || '-',
-                        'Bank Account No': transaction['Bank Account No'] || '-',
-                        'Extraction Date': transaction['Extraction Date'] || '-'
-                    };
-                });
-                
-                // Create a worksheet
-                const ws = XLSX.utils.json_to_sheet(excelData);
-                
-                // Add the worksheet to the workbook
-                XLSX.utils.book_append_sheet(wb, ws, 'Transactions');
-                
-                // Generate Excel file and trigger download
-                XLSX.writeFile(wb, 'transactions.xlsx');
-                showNotification('Excel file downloaded successfully!', 'success');
+                XLSX.utils.book_append_sheet(wb, ws, 'Processed Data');
+                XLSX.writeFile(wb, 'processed_report.xlsx');
             });
-            
-            // Export table to PDF
-            exportPDFBtn.addEventListener('click', function() {
-                if (allTransactions.length === 0) {
-                    showNotification('No transactions to export.', 'error');
+
+            function processExcelFile(file, type) {
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                        const processedData = cleanData(jsonData);
+                        if (type === 'wadi') {
+                            wadiData = processedData;
+                        } else if (type === 'maji') {
+                            majiData = processedData;
+                        }
+                        updateDisplay();
+                    } catch (error) {
+                        console.error('Error processing file:', error);
+                        alert('Error processing Excel file. Please make sure it is a valid Excel file.');
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            }
+
+            function cleanData(data) {
+                const filteredData = data.filter(row => {
+                    if (row.length === 0) return false;
+                    const firstCell = String(row[0] || '').toLowerCase().trim();
+                    const excludeTexts = ['transactionreports', 'tranglo', 'total', 'tranglo bdt'];
+                    if (excludeTexts.some(text => firstCell.includes(text))) return false;
+                    if (!row[0] || isNaN(parseFloat(row[0]))) return false;
+                    return true;
+                });
+                const processedData = filteredData.map(row => {
+                    const newRow = [];
+                    newRow.push(''); 
+                    newRow.push(row[1]); 
+                    newRow.push(row[6]); 
+                    newRow.push(row[15]); 
+                    newRow.push(row[7]); 
+                    newRow.push(row[17]); 
+                    newRow.push(row[28]); 
+                    return newRow;
+                });
+                return processedData;
+            }
+
+            function updateDisplay() {
+                const combinedData = [...wadiData, ...majiData];
+                exportData = [];
+                if (combinedData.length === 0) {
+                    tableContainer.innerHTML = '<p>No data to display</p>';
+                    updateStats(0, 0, 0);
                     return;
                 }
-                
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
-                
-                // Add title
-                doc.setFontSize(16);
-                doc.text('Transaction Report', 14, 15);
-                
-                // Prepare data for PDF
-                const tableColumn = [
-                    "S.No", "Pin No", "Transaction ID", "Confirmation ID", "Status", 
-                    "Partner Name", "Payout Partner", "DeliveryMode", "Paid By", 
-                    "Sender Name", "Customer ID", "Order No", "Collected Amount", 
-                    "Service Fee", "Transfer Amount", "Customer Rate", "Payout Amount", 
-                    "Serial No", "Deposit Type", "Address", "ID Type", "ID Number", 
-                    "ID Expiry Date", "ID Issue Country", "Date Of Birth", "Occupation", 
-                    "Mobile Number", "Relationship", "Gender", "Nationality", 
-                    "Source Of Fund", "Payout Country", "Beneficiary Name", 
-                    "Beneficiary Mobile Number", "Bank Name", "Bank Account No"
-                ];
-                
-                const tableRows = [];
-                
-                allTransactions.forEach((transaction, index) => {
-                    const transactionData = [
-                        index + 1,
-                        transaction['Pin No'] || '-',
-                        transaction['Transaction ID'] || '-',
-                        transaction['Confirmation ID'] || '-',
-                        transaction['Status'] || '-',
-                        transaction['Partner Name'] || '-',
-                        transaction['Payout Partner'] || '-',
-                        transaction['DeliveryMode'] || '-',
-                        transaction['Paid By'] || '-',
-                        transaction['Sender Name'] || '-',
-                        transaction['Customer ID'] || '-',
-                        transaction['Order No'] || '-',
-                        transaction['Collected Amount'] || '-',
-                        transaction['Service Fee'] || '-',
-                        transaction['Transfer Amount'] || '-',
-                        transaction['Customer Rate'] || '-',
-                        transaction['Payout Amount'] || '-',
-                        transaction['SerialNo'] || '-',
-                        transaction['DepositType'] || '-',
-                        transaction['Address'] || '-',
-                        transaction['ID Type'] || '-',
-                        transaction['ID Number'] || '-',
-                        transaction['ID Expiry Date'] || '-',
-                        transaction['ID Issue Country'] || '-',
-                        transaction['Date Of Birth'] || '-',
-                        transaction['Occupation'] || '-',
-                        transaction['Mobile Number'] || '-',
-                        transaction['Relationship'] || '-',
-                        transaction['Gender'] || '-',
-                        transaction['Nationality'] || '-',
-                        transaction['Source Of Fund'] || '-',
-                        transaction['Payout Country'] || '-',
-                        transaction['Beneficiary Name'] || '-',
-                        transaction['Beneficiary Mobile Number'] || '-',
-                        transaction['Bank Name'] || '-',
-                        transaction['Bank Account No'] || '-'
-                    ];
-                    tableRows.push(transactionData);
+                const table = document.createElement('table');
+                const thead = document.createElement('thead');
+                const headerRow = document.createElement('tr');
+                const headers = ['Item No', 'Transaction No', 'Status', 'Payment Mode', 'Collected Amount', 'Remitter Name', 'User Id'];
+                headers.forEach(headerText => {
+                    const th = document.createElement('th');
+                    th.textContent = headerText;
+                    headerRow.appendChild(th);
                 });
-                
-                // Add table to PDF
-                doc.autoTable({
-                    head: [tableColumn],
-                    body: tableRows,
-                    startY: 20,
-                    styles: { fontSize: 6 },
-                    columnStyles: {
-                        0: { cellWidth: 10 },
-                        1: { cellWidth: 20 },
-                        2: { cellWidth: 25 },
-                        3: { cellWidth: 25 },
-                        4: { cellWidth: 15 },
-                        5: { cellWidth: 20 },
-                        6: { cellWidth: 20 },
-                        7: { cellWidth: 20 },
-                        8: { cellWidth: 15 },
-                        9: { cellWidth: 25 },
-                        10: { cellWidth: 20 },
-                        11: { cellWidth: 15 },
-                        12: { cellWidth: 20 },
-                        13: { cellWidth: 15 },
-                        14: { cellWidth: 20 },
-                        15: { cellWidth: 15 },
-                        16: { cellWidth: 20 },
-                        17: { cellWidth: 15 },
-                        18: { cellWidth: 15 },
-                        19: { cellWidth: 25 },
-                        20: { cellWidth: 15 },
-                        21: { cellWidth: 20 },
-                        22: { cellWidth: 20 },
-                        23: { cellWidth: 20 },
-                        24: { cellWidth: 20 },
-                        25: { cellWidth: 20 },
-                        26: { cellWidth: 20 },
-                        27: { cellWidth: 20 },
-                        28: { cellWidth: 15 },
-                        29: { cellWidth: 15 },
-                        30: { cellWidth: 20 },
-                        31: { cellWidth: 20 },
-                        32: { cellWidth: 25 },
-                        33: { cellWidth: 25 },
-                        34: { cellWidth: 25 },
-                        35: { cellWidth: 25 }
+                thead.appendChild(headerRow);
+                table.appendChild(thead);
+                const tbody = document.createElement('tbody');
+                exportData.push(headers);
+                for (let i = 0; i < combinedData.length; i++) {
+                    const rowData = combinedData[i];
+                    const tr = document.createElement('tr');
+                    const itemNoTd = document.createElement('td');
+                    itemNoTd.textContent = 1;
+                    tr.appendChild(itemNoTd);
+                    const exportRow = [1];
+                    for (let j = 1; j < rowData.length; j++) {
+                        const td = document.createElement('td');
+                        td.textContent = rowData[j] || '';
+                        tr.appendChild(td);
+                        exportRow.push(rowData[j] || '');
                     }
-                });
-                
-                // Save the PDF
-                doc.save('transactions.pdf');
-                showNotification('PDF file downloaded successfully!', 'success');
-            });
-            
-            // Reset the text area
-            resetBtn.addEventListener('click', function() {
-                pdfText.value = '';
-                showNotification('Text area cleared.', 'success');
-            });
-            
-            // Clear all stored data
-            clearStorageBtn.addEventListener('click', function() {
-                if (confirm('Are you sure you want to clear all transaction data? This action cannot be undone.')) {
-                    localStorage.removeItem('transactionRecords');
-                    results.innerHTML = '';
-                    allTransactions = [];
-                    updateStorageInfo();
-                    updatePagination();
-                    showNotification('All transaction data has been cleared.', 'success');
+                    tbody.appendChild(tr);
+                    exportData.push(exportRow);
                 }
-            });
-            
-            // Show notification function
-            function showNotification(message, type) {
-                notificationMessage.textContent = message;
-                notification.className = `notification ${type}`;
-                notification.classList.add('show');
-                
-                setTimeout(() => {
-                    notification.classList.remove('show');
-                }, 3000);
+                table.appendChild(tbody);
+                tableContainer.innerHTML = '';
+                tableContainer.appendChild(table);
+                updateStats(wadiData.length, majiData.length, combinedData.length);
             }
-            
-            // Function to extract transaction details
-            function extractTransactionDetails(text) {
-                // Parse the text and extract details
-                const lines = text.split('\n');
-                
-                // Define the fields we want to extract
-                const fields = {
-                    'Pin No': '',
-                    'Transaction ID': '',
-                    'Confirmation ID': '',
-                    'Status': '',
-                    'Partner Name': '',
-                    'Payout Partner': '',
-                    'Branch': '',
-                    'DeliveryMode': '',
-                    'Paid By': '',
-                    'Sender Name': '',
-                    'Customer ID': '',
-                    'Order No': '',
-                    'Collected Amount': '',
-                    'Service Fee': '',
-                    'Transfer Amount': '',
-                    'Customer Rate': '',
-                    'Payout Amount': '',
-                    'SerialNo': '',
-                    'DepositType': '',
-                    'Address': '',
-                    'ID Type': '',
-                    'ID Number': '',
-                    'ID Expiry Date': '',
-                    'ID IssueDate': '',
-                    'ID Issue Country': '',
-                    'Date Of Birth': '',
-                    'Occupation': '',
-                    'Mobile Number': '',
-                    'Relationship': '',
-                    'Purpose Of Remittance': '',
-                    'Gender': '',
-                    'Nationality': '',
-                    'Source Of Fund': '',
-                    'Payout Country': '',
-                    'Beneficiary Name': '',
-                    'Beneficiary Mobile Number': '',
-                    'Bank Name': '',
-                    'Bank Account No': '',
-                    'REF1': '',
-                    'REF2': '',
-                    'Deposit Date': ''
-                   
-                };
-                
-                // Process each line with more sophisticated parsing
-                for (let i = 0; i < lines.length; i++) {
-                    let line = lines[i].trim();
-                    
-                    // Skip empty lines
-                    if (!line) continue;
-                    
-                    // Special handling for Pin No - get the value from the next line
-                    if (line.startsWith('Pin No')) {
-                        if (i + 1 < lines.length) {
-                            fields['Pin No'] = lines[i + 1].trim();
-                        }
-                        continue;
-                    }
-                    
-                    // Handle Transaction ID and Confirmation ID on the same line
-                    if (line.includes('Transaction ID') && line.includes('Confirmation ID')) {
-                        const transactionMatch = line.match(/Transaction ID:\s*(\S+)/);
-                        if (transactionMatch) fields['Transaction ID'] = transactionMatch[1];
-                        
-                        const confirmationMatch = line.match(/Confirmation ID:\s*(\S+)/);
-                        if (confirmationMatch) fields['Confirmation ID'] = confirmationMatch[1];
-                        continue;
-                    }
-                    
-                    // Handle Status - all five types (Paid, Hold, Compliance, API Processing, Posted, Post)
-                    if (line.includes('Paid') || line.includes('Hold') || line.includes('Compliance') || 
-                        line.includes('API Processing') || line.includes('Posted') || line.includes('Post')) {
-                        if (line.includes('Paid') && !fields['Status']) {
-                            fields['Status'] = 'Paid';
-                        } else if (line.includes('Hold') && !fields['Status']) {
-                            fields['Status'] = 'Hold';
-                        } else if (line.includes('Compliance') && !fields['Status']) {
-                            fields['Status'] = 'Compliance';
-                        } else if (line.includes('API Processing') && !fields['Status']) {
-                            fields['Status'] = 'API Processing';
-                        } else if (line.includes('Posted') && !fields['Status']) {
-                            fields['Status'] = 'Posted';
-                        } else if (line.includes('Post') && !fields['Status']) {
-                            fields['Status'] = 'Posted';
-                        }
-                    }
-                    
-                    // Handle Partner Name (BKB-S, BKB-L, BKB-M, Bangla-S, IDR-L, etc.)
-                    const partnerPatterns = [
-                        'BKB-S', 'BKB-L', 'BKB-M', 'BKB', 
-                        'Bangla-S', 'Bangla-L', 'Bangla-M', 'Bangla',
-                        'IDR-S', 'IDR-L', 'IDR-M', 'IDR',
-                        'BANGLA S', 'BANGLA L', 'BANGLA M', 'BANGLA'
-                    ];
-                    
-                    for (const pattern of partnerPatterns) {
-                        if (line.includes(pattern) && !fields['Partner Name']) {
-                            fields['Partner Name'] = pattern;
-                            break;
-                        }
-                    }
-                    
-                    // Handle DeliveryMode extraction
-                    if (line.includes('DeliveryMode') && !fields['DeliveryMode']) {
-                        const parts = line.split('\t').filter(part => part.trim() !== '');
-                        if (parts.length >= 3 && parts[1] === 'DeliveryMode') {
-                            fields['DeliveryMode'] = parts[2];
-                        }
-                    }
-                    
-                    // Handle Bank Name extraction
-                    if (line.includes('Location') && !fields['Bank Name']) {
-                        const parts = line.split('\t').filter(part => part.trim() !== '');
-                        if (parts.length >= 3 && parts[0] === 'Location') {
-                            fields['Bank Name'] = parts[1];
-                        }
-                    }
-                    
-                    // Handle tab-separated values (common in these documents)
-                    if (line.includes('\t')) {
-                        const parts = line.split('\t').filter(part => part.trim() !== '');
-                        
-                        // Handle different patterns of tab-separated data
-                        if (parts.length >= 3) {
-                            // Check for partner name in the first part
-                            for (const pattern of partnerPatterns) {
-                                if (parts[0] === pattern && parts[1] === 'Payout Partner') {
-                                    fields['Payout Partner'] = parts[2];
-                                    if (!fields['Partner Name']) fields['Partner Name'] = parts[0];
-                                    break;
-                                }
-                            }
-                            
-                            if (parts[0] === 'Branch' && parts[1] === 'DeliveryMode') {
-                                fields['Branch'] = parts[2];
-                                if (!fields['DeliveryMode']) fields['DeliveryMode'] = parts[2];
-                                continue;
-                            }
-                            if (parts[0] === 'BRUNEI' && parts[1] === 'Paid By') {
-                                fields['Paid By'] = parts[2];
-                                continue;
-                            }
-                            if (parts[0] === 'HeadOffice' && parts[1] === 'DeliveryMode') {
-                                fields['DeliveryMode'] = parts[2];
-                                continue;
-                            }
-                            if (parts[0] === 'Location' && parts[1] !== 'Branch') {
-                                fields['Bank Name'] = parts[1];
-                                continue;
-                            }
-                        }
-                        
-                        // Handle sender information with tabs
-                        if (parts.length >= 2) {
-                            if (parts[0] === 'Sender Name' && !fields['Sender Name']) {
-                                fields['Sender Name'] = parts[1];
-                                if (parts.length >= 4 && parts[2] === 'Customer ID') {
-                                    fields['Customer ID'] = parts[3];
-                                }
-                                continue;
-                            }
-                            
-                            if (parts[0] === 'ID Type' && parts[2] === 'ID Number') {
-                                fields['ID Type'] = parts[1];
-                                fields['ID Number'] = parts[3];
-                                continue;
-                            }
-                            
-                            if (parts[0] === 'ID Expiry Date' && parts[2] === 'ID IssueDate') {
-                                fields['ID Expiry Date'] = parts[1];
-                                continue;
-                            }
-                            
-                            if (parts[0] === 'ID Issue Country' && parts[2] === 'Email') {
-                                fields['ID Issue Country'] = parts[1];
-                                continue;
-                            }
-                            
-                            if (parts[0] === 'Occupation' && parts[2] === 'Mobile Number') {
-                                fields['Occupation'] = parts[1];
-                                fields['Mobile Number'] = parts[3];
-                                continue;
-                            }
-                            
-                            if (parts[0] === 'Nationality' && parts[2] === 'Source Of Fund') {
-                                fields['Nationality'] = parts[1];
-                                fields['Source Of Fund'] = parts[3];
-                                continue;
-                            }
-                            
-                            if (parts[0] === 'Beneficiary Name' && parts[2] === 'Mobile Number') {
-                                fields['Beneficiary Name'] = parts[1];
-                                fields['Beneficiary Mobile Number'] = parts[3];
-                                continue;
-                            }
-                            
-                            if (parts[0] === 'Bank Account No' && parts[2] === 'BeneficiaryMessage') {
-                                fields['Bank Account No'] = parts[1];
-                                continue;
-                            }
-                        }
-                    }
-                    
-                    // Handle colon-separated values
-                    if (line.includes(':')) {
-                        const parts = line.split(':');
-                        const key = parts[0].trim();
-                        const value = parts.slice(1).join(':').trim();
-                        
-                        if (key === 'Order No' && !fields['Order No']) {
-                            fields['Order No'] = value;
-                            continue;
-                        }
-                        
-                        if (key === 'Collected Amount' && !fields['Collected Amount']) {
-                            fields['Collected Amount'] = value;
-                            continue;
-                        }
-                        
-                        if (key === 'Service Fee' && !fields['Service Fee']) {
-                            fields['Service Fee'] = value;
-                            continue;
-                        }
-                        
-                        if (key === 'Transfer Amount' && !fields['Transfer Amount']) {
-                            fields['Transfer Amount'] = value;
-                            continue;
-                        }
-                        
-                        if (key === 'Customer Rate' && !fields['Customer Rate']) {
-                            fields['Customer Rate'] = value;
-                            continue;
-                        }
-                        
-                        if (key === 'SerialNo' && !fields['SerialNo']) {
-                            fields['SerialNo'] = value;
-                            continue;
-                        }
-                        
-                        if (key === 'DepositType' && !fields['DepositType']) {
-                            fields['DepositType'] = value;
-                            continue;
-                        }
-                    }
-                    
-                    // Handle specific field patterns
-                    if (line.startsWith('Payout Amount') && !fields['Payout Amount']) {
-                        fields['Payout Amount'] = line.replace('Payout Amount', '').trim();
-                        continue;
-                    }
-                    
-                    if (line.startsWith('Address') && !fields['Address']) {
-                        fields['Address'] = line.replace('Address', '').trim();
-                        continue;
-                    }
-                    
-                    if (line.startsWith('Date Of Birth') && !fields['Date Of Birth']) {
-                        fields['Date Of Birth'] = line.replace('Date Of Birth', '').trim();
-                        continue;
-                    }
-                    
-                    if (line.startsWith('Relationship') && !fields['Relationship']) {
-                        fields['Relationship'] = line.replace('Relationship', '').trim();
-                        continue;
-                    }
-                    
-                    if (line.startsWith('Purpose Of Remittance') && !fields['Purpose Of Remittance']) {
-                        fields['Purpose Of Remittance'] = line.replace('Purpose Of Remittance', '').trim();
-                        continue;
-                    }
-                    
-                    if (line.startsWith('Gender') && !fields['Gender']) {
-                        fields['Gender'] = line.replace('Gender', '').trim();
-                        continue;
-                    }
-                    
-                    if (line.startsWith('Payout Country') && !fields['Payout Country']) {
-                        fields['Payout Country'] = line.replace('Payout Country', '').trim();
-                        continue;
-                    }
-                }
-                
-                // Special handling for status - if not found, check the line after Transaction ID
-                if (!fields['Status']) {
-                    for (let i = 0; i < lines.length; i++) {
-                        if (lines[i].includes('Transaction ID')) {
-                            if (i + 2 < lines.length) {
-                                const statusLine = lines[i + 2].trim();
-                                if (statusLine === 'Paid' || statusLine === 'Hold' || statusLine === 'Compliance' || 
-                                    statusLine === 'API Processing' || statusLine === 'Posted' || statusLine === 'Post') {
-                                    fields['Status'] = statusLine === 'Post' ? 'Posted' : statusLine;
-                                }
-                            }
-                            break;
-                        }
-                    }
-                    
-                    // If still not found, check for status in the line after the Transaction ID line
-                    if (!fields['Status']) {
-                        for (let i = 0; i < lines.length; i++) {
-                            if (lines[i].includes('Transaction ID')) {
-                                // Check the next few lines for status
-                                for (let j = i + 1; j < Math.min(i + 5, lines.length); j++) {
-                                    const statusLine = lines[j].trim();
-                                    if (statusLine === 'Paid' || statusLine === 'Hold' || statusLine === 'Compliance' || 
-                                        statusLine === 'API Processing' || statusLine === 'Posted' || statusLine === 'Post') {
-                                        fields['Status'] = statusLine === 'Post' ? 'Posted' : statusLine;
-                                        break;
-                                    }
-                                }
-                                break;
-                            }
-                        }
-                    }
-                    
-                    // If still not found, default to Paid
-                    if (!fields['Status']) {
-                        fields['Status'] = 'Paid';
-                    }
-                }
-                
-                // Special handling for partner name - if not found, check the line after status
-                if (!fields['Partner Name']) {
-                    for (let i = 0; i < lines.length; i++) {
-                        if (lines[i].includes('Transaction ID')) {
-                            // Check the next few lines for partner name
-                            for (let j = i + 1; j < Math.min(i + 5, lines.length); j++) {
-                                const partnerLine = lines[j].trim();
-                                // Check for all partner patterns
-                                const partnerPatterns = [
-                                    'BKB-S', 'BKB-L', 'BKB-M', 'BKB', 
-                                    'Bangla-S', 'Bangla-L', 'Bangla-M', 'Bangla',
-                                    'IDR-S', 'IDR-L', 'IDR-M', 'IDR',
-                                    'BANGLA S', 'BANGLA L', 'BANGLA M', 'BANGLA'
-                                ];
-                                
-                                for (const pattern of partnerPatterns) {
-                                    if (partnerLine.includes(pattern)) {
-                                        fields['Partner Name'] = pattern;
-                                        break;
-                                    }
-                                }
-                                
-                                if (fields['Partner Name']) break;
-                            }
-                            break;
-                        }
-                    }
-                }
-                
-                // Special handling for DeliveryMode - if not found, check for it in tab-separated lines
-                if (!fields['DeliveryMode']) {
-                    for (let i = 0; i < lines.length; i++) {
-                        let line = lines[i].trim();
-                        if (line.includes('DeliveryMode')) {
-                            const parts = line.split('\t').filter(part => part.trim() !== '');
-                            if (parts.length >= 3 && parts[1] === 'DeliveryMode') {
-                                fields['DeliveryMode'] = parts[2];
-                                break;
-                            }
-                        }
-                    }
-                }
-                
-                // Special handling for Bank Name - if not found, check for it in tab-separated lines
-                if (!fields['Bank Name']) {
-                    for (let i = 0; i < lines.length; i++) {
-                        let line = lines[i].trim();
-                        if (line.includes('Location')) {
-                            const parts = line.split('\t').filter(part => part.trim() !== '');
-                            if (parts.length >= 3 && parts[0] === 'Location') {
-                                fields['Bank Name'] = parts[1];
-                                break;
-                            }
-                        }
-                    }
-                }
-                
-                // Add timestamp
-                fields['Extraction Date'] = new Date().toLocaleString();
-                
-                return fields;
-            }
-            
-            // Save transaction to local storage
-            function saveTransactionToStorage(transactionData) {
-                let transactions = JSON.parse(localStorage.getItem('transactionRecords')) || [];
-                
-                // Check if transaction already exists using a unique identifier
-                const exists = transactions.some(t => 
-                    t['Transaction ID'] === transactionData['Transaction ID'] && 
-                    t['Pin No'] === transactionData['Pin No']
-                );
-                
-                if (!exists) {
-                    transactions.push(transactionData);
-                    localStorage.setItem('transactionRecords', JSON.stringify(transactions));
-                    return true;
-                } else {
-                    showNotification('This transaction already exists in the database.', 'error');
-                    return false;
-                }
-            }
-            
-            // Load transactions from local storage
-            function loadTransactionsFromStorage() {
-                allTransactions = JSON.parse(localStorage.getItem('transactionRecords')) || [];
-                
-                if (allTransactions.length > 0) {
-                    updateStorageInfo();
-                    displayPage(1);
-                    updatePagination();
-                } else {
-                    results.innerHTML = '';
-                    updateStorageInfo();
-                    updatePagination();
-                }
-            }
-            
-            // Display a specific page of transactions
-            function displayPage(page) {
-                currentPage = page;
-                const start = (page - 1) * rowsPerPage;
-                const end = start + rowsPerPage;
-                const paginatedTransactions = allTransactions.slice(start, end);
-                
-                results.innerHTML = '';
-                
-                if (paginatedTransactions.length > 0) {
-                    paginatedTransactions.forEach((transaction, index) => {
-                        addTransactionToTable(transaction, start + index + 1);
-                    });
-                }
-                
-                updatePagination();
-            }
-            
-            // Update pagination controls
-            function updatePagination() {
-                const pageCount = Math.ceil(allTransactions.length / rowsPerPage);
-                pagination.innerHTML = '';
-                
-                if (pageCount <= 1) return;
-                
-                // Previous button
-                if (currentPage > 1) {
-                    const prevButton = document.createElement('button');
-                    prevButton.textContent = 'Previous';
-                    prevButton.addEventListener('click', () => displayPage(currentPage - 1));
-                    pagination.appendChild(prevButton);
-                }
-                
-                // Page buttons
-                const maxVisiblePages = 5;
-                let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-                let endPage = Math.min(pageCount, startPage + maxVisiblePages - 1);
-                
-                if (endPage - startPage + 1 < maxVisiblePages) {
-                    startPage = Math.max(1, endPage - maxVisiblePages + 1);
-                }
-                
-                for (let i = startPage; i <= endPage; i++) {
-                    const pageButton = document.createElement('button');
-                    pageButton.textContent = i;
-                    if (i === currentPage) {
-                        pageButton.classList.add('active');
-                    }
-                    pageButton.addEventListener('click', () => displayPage(i));
-                    pagination.appendChild(pageButton);
-                }
-                
-                // Next button
-                if (currentPage < pageCount) {
-                    const nextButton = document.createElement('button');
-                    nextButton.textContent = 'Next';
-                    nextButton.addEventListener('click', () => displayPage(currentPage + 1));
-                    pagination.appendChild(nextButton);
-                }
-                
-                // Add page info
-                const pageInfo = document.createElement('div');
-                pageInfo.className = 'pagination-info';
-                pageInfo.textContent = `Page ${currentPage} of ${pageCount} | ${allTransactions.length} total records`;
-                pagination.appendChild(pageInfo);
-            }
-            
-            // Add transaction to table
-            function addTransactionToTable(transactionData, serialNumber) {
-                const row = document.createElement('tr');
-                
-                // Determine status class
-                let statusClass = 'status-paid';
-                if (transactionData['Status'].toLowerCase() === 'hold') statusClass = 'status-hold';
-                if (transactionData['Status'].toLowerCase() === 'compliance') statusClass = 'status-compliance';
-                if (transactionData['Status'].toLowerCase().includes('api')) statusClass = 'status-api';
-                if (transactionData['Status'].toLowerCase() === 'posted') statusClass = 'status-posted';
-                
-                // Helper function to display value or dash if empty
-                const displayValue = (value) => value && value !== 'undefined' ? value : '-';
-                
-                row.innerHTML = `
-                    <td>${serialNumber}</td>
-                    <td>${displayValue(transactionData['Pin No'])}</td>
-                    <td>${displayValue(transactionData['Transaction ID'])}</td>
-                    <td>${displayValue(transactionData['Confirmation ID'])}</td>
-                    <td><span class="status-badge ${statusClass}">${displayValue(transactionData['Status'])}</span></td>
-                    <td>${displayValue(transactionData['Partner Name'])}</td>
-                    <td>${displayValue(transactionData['Payout Partner'])}</td>
-                    <td>${displayValue(transactionData['DeliveryMode'])}</td>
-                    <td>${displayValue(transactionData['Paid By'])}</td>
-                    <td>${displayValue(transactionData['Sender Name'])}</td>
-                    <td>${displayValue(transactionData['Customer ID'])}</td>
-                    <td>${displayValue(transactionData['Order No'])}</td>
-                    <td class="amount">${displayValue(transactionData['Collected Amount'])}</td>
-                    <td class="amount">${displayValue(transactionData['Service Fee'])}</td>
-                    <td class="amount">${displayValue(transactionData['Transfer Amount'])}</td>
-                    <td>${displayValue(transactionData['Customer Rate'])}</td>
-                    <td class="amount">${displayValue(transactionData['Payout Amount'])}</td>
-                    <td>${displayValue(transactionData['SerialNo'])}</td>
-                    <td>${displayValue(transactionData['DepositType'])}</td>
-                    <td>${displayValue(transactionData['Address'])}</td>
-                    <td>${displayValue(transactionData['ID Type'])}</td>
-                    <td>${displayValue(transactionData['ID Number'])}</td>
-                    <td>${displayValue(transactionData['ID Expiry Date'])}</td>
-                    <td>${displayValue(transactionData['ID Issue Country'])}</td>
-                    <td>${displayValue(transactionData['Date Of Birth'])}</td>
-                    <td>${displayValue(transactionData['Occupation'])}</td>
-                    <td>${displayValue(transactionData['Mobile Number'])}</td>
-                    <td>${displayValue(transactionData['Relationship'])}</td>
-                    <td>${displayValue(transactionData['Gender'])}</td>
-                    <td>${displayValue(transactionData['Nationality'])}</td>
-                    <td>${displayValue(transactionData['Source Of Fund'])}</td>
-                    <td>${displayValue(transactionData['Payout Country'])}</td>
-                    <td>${displayValue(transactionData['Beneficiary Name'])}</td>
-                    <td>${displayValue(transactionData['Beneficiary Mobile Number'])}</td>
-                    <td>${displayValue(transactionData['Bank Name'])}</td>
-                    <td>${displayValue(transactionData['Bank Account No'])}</td>
-                    <td class="action-buttons">
-                        <button class="action-btn view-btn" onclick="viewTransactionDetails('${transactionData['Transaction ID']}')">View</button>
-                        <button class="action-btn delete-btn" onclick="deleteTransaction('${transactionData['Transaction ID']}', '${transactionData['Pin No']}')">Delete</button>
-                    </td>
-                `;
-                
-                results.appendChild(row);
-            }
-         
-            function updateStorageInfo() {
-                storageInfo.textContent = `${allTransactions.length} Transactions Stored`;
-                
-                if (allTransactions.length === 0) {
-                    storageInfo.textContent = 'No transactions stored';
-                }
+
+            function updateStats(wadiCount, majiCount, totalCount) {
+                rowCount.textContent = `${totalCount} rows`;
+                wadiCountEl.textContent = wadiCount;
+                majiCountEl.textContent = majiCount;
+                totalCountEl.textContent = totalCount;
             }
         });
-        
-        function viewTransactionDetails(transactionId) {
-            alert(`View details for transaction: ${transactionId}\n\nThis would show a detailed view in a real application.`);
-        }
-        
-        function deleteTransaction(transactionId, pinNo) {
-            if (confirm('Are you sure you want to delete this transaction?')) {
-                let transactions = JSON.parse(localStorage.getItem('transactionRecords')) || [];
-                transactions = transactions.filter(t => 
-                    !(t['Transaction ID'] === transactionId && t['Pin No'] === pinNo)
-                );
-                localStorage.setItem('transactionRecords', JSON.stringify(transactions));
-               
-                location.reload();
-            }
-        }
     </script>
 </body>
 </html>
