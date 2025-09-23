@@ -62,7 +62,7 @@
 
         .upload-wrapper {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr;
             gap: 30px;
             max-width: 1400px;
             margin: 0 auto 30px;
@@ -99,6 +99,15 @@
             border-color: #d32f2f;
         }
 
+        .upload-area.yellow-border {
+            border-color: #FFC107;
+        }
+
+        .upload-area.yellow-border:hover {
+            background-color: #FFFDE7;
+            border-color: #FFB300;
+        }
+
         .upload-area i {
             font-size: 48px;
             color: #2196F3;
@@ -107,6 +116,10 @@
 
         .upload-area.red-border i {
             color: #f44336;
+        }
+
+        .upload-area.yellow-border i {
+            color: #FFC107;
         }
 
         .upload-area h3 {
@@ -118,9 +131,24 @@
             color: #d32f2f;
         }
 
+        .upload-area.yellow-border h3 {
+            color: #F57F17;
+        }
+
         .upload-area p {
             color: #5f6368;
             margin-bottom: 20px;
+        }
+
+        .upload-area textarea {
+            width: 100%;
+            height: 150px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            resize: vertical;
+            margin-bottom: 15px;
         }
 
         .btn {
@@ -142,6 +170,14 @@
 
         .btn.red-btn:hover {
             background: #d32f2f;
+        }
+
+        .btn.yellow-btn {
+            background: #FFC107;
+        }
+
+        .btn.yellow-btn:hover {
+            background: #FFB300;
         }
 
         .btn:hover {
@@ -206,9 +242,19 @@
             background-color: #f5faff;
         }
 
+        .status-paid {
+            color: #333;
+            font-weight: normal;
+        }
+        
+        .status-approved {
+            color: #333;
+            font-weight: normal;
+        }
+
         .stats {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 15px;
             margin-top: 20px;
         }
@@ -289,6 +335,18 @@
                     </button>
                 </div>
             </div>
+
+            <div class="upload-section">
+                <div class="upload-area yellow-border" id="wuArea">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h3>Input WU Text</h3>
+                    <p>Paste your text here or type</p>
+                    <textarea id="wuTextInput" placeholder="Paste your text content here..."></textarea>
+                    <button class="btn yellow-btn" id="processWuBtn">
+                        <i class="fas fa-cogs"></i> Process Text
+                    </button>
+                </div>
+            </div>
         </div>
 
         <div class="results-section">
@@ -308,6 +366,10 @@
                     <div class="stat-box">
                         <h3>Maji Count</h3>
                         <p id="majiCount">0</p>
+                    </div>
+                    <div class="stat-box">
+                        <h3>WU Count</h3>
+                        <p id="wuCount">0</p>
                     </div>
                     <div class="stat-box">
                         <h3>Total Count</h3>
@@ -331,14 +393,18 @@
             const wadiDropZone = document.getElementById('wadiDropZone');
             const majiFileInput = document.getElementById('majiFileInput');
             const majiDropZone = document.getElementById('majiDropZone');
+            const wuTextInput = document.getElementById('wuTextInput');
+            const processWuBtn = document.getElementById('processWuBtn');
             const tableContainer = document.getElementById('tableContainer');
             const rowCount = document.getElementById('rowCount');
             const wadiCountEl = document.getElementById('wadiCount');
             const majiCountEl = document.getElementById('majiCount');
+            const wuCountEl = document.getElementById('wuCount');
             const totalCountEl = document.getElementById('totalCount');
             const exportBtn = document.getElementById('exportBtn');
             let wadiData = [];
             let majiData = [];
+            let wuData = [];
             let exportData = [];
 
             wadiFileInput.addEventListener('change', function(e) {
@@ -382,6 +448,8 @@
                     processExcelFile(e.dataTransfer.files[0], 'maji');
                 }
             });
+
+            processWuBtn.addEventListener('click', processWuText);
 
             exportBtn.addEventListener('click', function() {
                 if (exportData.length === 0) return;
@@ -446,12 +514,57 @@
                 return processedData;
             }
 
+            function processWuText() {
+                const text = wuTextInput.value.trim();
+                if (!text) {
+                    alert('Please paste some text content first.');
+                    return;
+                }
+                
+                const lines = text.split('\n');
+                if (lines.length < 2) {
+                    alert('Not enough data to create a table. Please paste more lines.');
+                    return;
+                }
+                
+                const dataRows = [];
+                for (let i = 0; i < lines.length; i++) {
+                    if (lines[i].trim() !== '') {
+                        const rowData = parseLine(lines[i]);
+                        if (rowData.length >= 9 && !isNaN(Date.parse(rowData[0]))) {
+                            const selected = [
+                                '',  // Placeholder for Item No
+                                rowData[1],  // Transaction No
+                                rowData[3],  // Status
+                                rowData[5],  // Payment Mode
+                                rowData[6].replace(/BND/g, '').trim(),  // Collected Amount without BND
+                                rowData[2],  // Remitter Name
+                                'WU'   // User Id
+                            ];
+                            dataRows.push(selected);
+                        }
+                    }
+                }
+                
+                if (dataRows.length === 0) {
+                    alert('No valid data rows to display.');
+                    return;
+                }
+                
+                wuData = dataRows;
+                updateDisplay();
+            }
+
+            function parseLine(line) {
+                return line.split(/\t|\s{2,}/).filter(item => item.trim() !== '');
+            }
+
             function updateDisplay() {
-                const combinedData = [...wadiData, ...majiData];
+                const combinedData = [...wadiData, ...majiData, ...wuData];
                 exportData = [];
                 if (combinedData.length === 0) {
                     tableContainer.innerHTML = '<p>No data to display</p>';
-                    updateStats(0, 0, 0);
+                    updateStats(0, 0, 0, 0);
                     return;
                 }
                 const table = document.createElement('table');
@@ -486,13 +599,14 @@
                 table.appendChild(tbody);
                 tableContainer.innerHTML = '';
                 tableContainer.appendChild(table);
-                updateStats(wadiData.length, majiData.length, combinedData.length);
+                updateStats(wadiData.length, majiData.length, wuData.length, combinedData.length);
             }
 
-            function updateStats(wadiCount, majiCount, totalCount) {
+            function updateStats(wadiCount, majiCount, wuCount, totalCount) {
                 rowCount.textContent = `${totalCount} rows`;
                 wadiCountEl.textContent = wadiCount;
                 majiCountEl.textContent = majiCount;
+                wuCountEl.textContent = wuCount;
                 totalCountEl.textContent = totalCount;
             }
         });
