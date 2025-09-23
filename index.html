@@ -62,7 +62,7 @@
 
         .upload-wrapper {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: repeat(4, 1fr);
             gap: 30px;
             max-width: 1400px;
             margin: 0 auto 30px;
@@ -108,6 +108,15 @@
             border-color: #FFB300;
         }
 
+        .upload-area.green-border {
+            border-color: #2E7D32;
+        }
+
+        .upload-area.green-border:hover {
+            background-color: #E8F5E9;
+            border-color: #1B5E20;
+        }
+
         .upload-area i {
             font-size: 48px;
             color: #2196F3;
@@ -122,6 +131,10 @@
             color: #FFC107;
         }
 
+        .upload-area.green-border i {
+            color: #2E7D32;
+        }
+
         .upload-area h3 {
             margin-bottom: 10px;
             color: #0D47A1;
@@ -133,6 +146,10 @@
 
         .upload-area.yellow-border h3 {
             color: #F57F17;
+        }
+
+        .upload-area.green-border h3 {
+            color: #1B5E20;
         }
 
         .upload-area p {
@@ -178,6 +195,14 @@
 
         .btn.yellow-btn:hover {
             background: #FFB300;
+        }
+
+        .btn.green-btn {
+            background: #2E7D32;
+        }
+
+        .btn.green-btn:hover {
+            background: #1B5E20;
         }
 
         .btn:hover {
@@ -242,16 +267,6 @@
             background-color: #f5faff;
         }
 
-        .status-paid {
-            color: #333;
-            font-weight: normal;
-        }
-        
-        .status-approved {
-            color: #333;
-            font-weight: normal;
-        }
-
         .stats {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -265,6 +280,10 @@
             border-radius: 8px;
             text-align: center;
             border-left: 4px solid #2196F3;
+        }
+
+        .stat-box.green-border {
+            border-left: 4px solid #2E7D32;
         }
 
         .stat-box h3 {
@@ -291,7 +310,7 @@
             .upload-wrapper {
                 grid-template-columns: 1fr;
             }
-            
+
             .stats {
                 grid-template-columns: 1fr;
             }
@@ -343,7 +362,19 @@
                     <p>Paste your text here or type</p>
                     <textarea id="wuTextInput" placeholder="Paste your text content here..."></textarea>
                     <button class="btn yellow-btn" id="processWuBtn">
-                        <i class="fas fa-cogs"></i> Process Text
+                        <i class="fas fa-cogs"></i> Convert to Table
+                    </button>
+                </div>
+            </div>
+
+            <div class="upload-section">
+                <div class="upload-area green-border" id="garudaArea">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h3>Input Garuda Text</h3>
+                    <p>Paste your text here or type</p>
+                    <textarea id="garudaTextInput" placeholder="Paste your text content here..."></textarea>
+                    <button class="btn green-btn" id="processGarudaBtn">
+                        <i class="fas fa-cogs"></i> Convert to Table
                     </button>
                 </div>
             </div>
@@ -371,9 +402,9 @@
                         <h3>WU Count</h3>
                         <p id="wuCount">0</p>
                     </div>
-                    <div class="stat-box">
-                        <h3>Total Count</h3>
-                        <p id="totalCount">0</p>
+                    <div class="stat-box green-border">
+                        <h3>Garuda Count</h3>
+                        <p id="garudaCount">0</p>
                     </div>
                 </div>
                 <div id="tableContainer"></div>
@@ -395,16 +426,19 @@
             const majiDropZone = document.getElementById('majiDropZone');
             const wuTextInput = document.getElementById('wuTextInput');
             const processWuBtn = document.getElementById('processWuBtn');
+            const garudaTextInput = document.getElementById('garudaTextInput');
+            const processGarudaBtn = document.getElementById('processGarudaBtn');
             const tableContainer = document.getElementById('tableContainer');
             const rowCount = document.getElementById('rowCount');
             const wadiCountEl = document.getElementById('wadiCount');
             const majiCountEl = document.getElementById('majiCount');
             const wuCountEl = document.getElementById('wuCount');
-            const totalCountEl = document.getElementById('totalCount');
+            const garudaCountEl = document.getElementById('garudaCount');
             const exportBtn = document.getElementById('exportBtn');
             let wadiData = [];
             let majiData = [];
             let wuData = [];
+            let garudaData = [];
             let exportData = [];
 
             wadiFileInput.addEventListener('change', function(e) {
@@ -450,9 +484,13 @@
             });
 
             processWuBtn.addEventListener('click', processWuText);
+            processGarudaBtn.addEventListener('click', processGarudaText);
 
             exportBtn.addEventListener('click', function() {
-                if (exportData.length === 0) return;
+                if (exportData.length === 0) {
+                    alert('No data to export. Please process some data first.');
+                    return;
+                }
                 const ws = XLSX.utils.aoa_to_sheet(exportData);
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, 'Processed Data');
@@ -499,13 +537,13 @@
 
                 let indices;
                 if (type === 'maji') {
-                    indices = [1, 5, 14, 6, 16, 22]; // B, F, O, G, Q, W (with G and O swapped in position)
+                    indices = [1, 5, 14, 6, 16, 22]; // B, F, O, G, Q, W
                 } else {
                     indices = [1, 6, 15, 7, 17, 28]; // Original for Wadi
                 }
 
                 const processedData = filteredData.map(row => {
-                    const newRow = ['']; // Placeholder for Item No
+                    const newRow = ['1']; // Fixed Item No
                     indices.forEach(idx => {
                         newRow.push(row[idx]);
                     });
@@ -520,38 +558,84 @@
                     alert('Please paste some text content first.');
                     return;
                 }
-                
+
                 const lines = text.split('\n');
                 if (lines.length < 2) {
                     alert('Not enough data to create a table. Please paste more lines.');
                     return;
                 }
-                
+
+                const headers = parseLine(lines[0]);
+                const columnsToExtract = [1, 3, 7, 6, 2]; // From Website 1
                 const dataRows = [];
-                for (let i = 0; i < lines.length; i++) {
+
+                for (let i = 1; i < lines.length; i++) {
                     if (lines[i].trim() !== '') {
                         const rowData = parseLine(lines[i]);
-                        if (rowData.length >= 9 && !isNaN(Date.parse(rowData[0]))) {
-                            const selected = [
-                                '',  // Placeholder for Item No
-                                rowData[1],  // Transaction No
-                                rowData[3],  // Status
-                                rowData[5],  // Payment Mode
-                                rowData[6].replace(/BND/g, '').trim(),  // Collected Amount without BND
-                                rowData[2],  // Remitter Name
-                                'WU'   // User Id
-                            ];
-                            dataRows.push(selected);
+                        if (rowData.length >= columnsToExtract.length) {
+                            const selectedRowData = columnsToExtract.map(index => {
+                                let value = rowData[index] || '';
+                                if (index === 6) { // Collected Amount
+                                    value = value.replace(/BND/g, '').trim();
+                                }
+                                return value;
+                            });
+                            selectedRowData.unshift('1'); // Fixed Item No
+                            selectedRowData.push('WU'); // User Id
+                            dataRows.push(selectedRowData);
                         }
                     }
                 }
-                
+
                 if (dataRows.length === 0) {
                     alert('No valid data rows to display.');
                     return;
                 }
-                
+
                 wuData = dataRows;
+                updateDisplay();
+            }
+
+            function processGarudaText() {
+                const text = garudaTextInput.value.trim();
+                if (!text) {
+                    alert('Please paste some text content first.');
+                    return;
+                }
+
+                const lines = text.split('\n');
+                if (lines.length < 1) {
+                    alert('Not enough data to create a table. Please paste more lines.');
+                    return;
+                }
+
+                const columnsToExtract = [1, 3, 6, 4, 5]; // Transaction No, Status, Payment Mode (RT No), Collected Amount, Remitter Name
+                const dataRows = [];
+
+                for (let i = 0; i < lines.length; i++) {
+                    if (lines[i].trim() !== '') {
+                        const rowData = parseLine(lines[i]);
+                        if (rowData.length >= columnsToExtract.length) {
+                            const selectedRowData = columnsToExtract.map(index => {
+                                let value = rowData[index] || '';
+                                if (index === 4) { // Collected Amount
+                                    value = value.replace(/BND/g, '').trim();
+                                }
+                                return value;
+                            });
+                            selectedRowData.unshift('1'); // Fixed Item No
+                            selectedRowData.push('ID999'); // User Id
+                            dataRows.push(selectedRowData);
+                        }
+                    }
+                }
+
+                if (dataRows.length === 0) {
+                    alert('No valid data rows to display.');
+                    return;
+                }
+
+                garudaData = dataRows;
                 updateDisplay();
             }
 
@@ -560,7 +644,7 @@
             }
 
             function updateDisplay() {
-                const combinedData = [...wadiData, ...majiData, ...wuData];
+                const combinedData = [...wadiData, ...majiData, ...wuData, ...garudaData];
                 exportData = [];
                 if (combinedData.length === 0) {
                     tableContainer.innerHTML = '<p>No data to display</p>';
@@ -580,34 +664,30 @@
                 table.appendChild(thead);
                 const tbody = document.createElement('tbody');
                 exportData.push(headers);
-                for (let i = 0; i < combinedData.length; i++) {
-                    const rowData = combinedData[i];
+                combinedData.forEach(rowData => {
                     const tr = document.createElement('tr');
-                    const itemNoTd = document.createElement('td');
-                    itemNoTd.textContent = '1';
-                    tr.appendChild(itemNoTd);
-                    const exportRow = ['1'];
-                    for (let j = 1; j < rowData.length; j++) {
+                    const exportRow = [];
+                    rowData.forEach((cellData, index) => {
                         const td = document.createElement('td');
-                        td.textContent = rowData[j] || '';
+                        td.textContent = cellData || '';
                         tr.appendChild(td);
-                        exportRow.push(rowData[j] || '');
-                    }
+                        exportRow.push(cellData || '');
+                    });
                     tbody.appendChild(tr);
                     exportData.push(exportRow);
-                }
+                });
                 table.appendChild(tbody);
                 tableContainer.innerHTML = '';
                 tableContainer.appendChild(table);
-                updateStats(wadiData.length, majiData.length, wuData.length, combinedData.length);
+                updateStats(wadiData.length, majiData.length, wuData.length, garudaData.length);
             }
 
-            function updateStats(wadiCount, majiCount, wuCount, totalCount) {
-                rowCount.textContent = `${totalCount} rows`;
+            function updateStats(wadiCount, majiCount, wuCount, garudaCount) {
+                rowCount.textContent = `${wadiCount + majiCount + wuCount + garudaCount} rows`;
                 wadiCountEl.textContent = wadiCount;
                 majiCountEl.textContent = majiCount;
                 wuCountEl.textContent = wuCount;
-                totalCountEl.textContent = totalCount;
+                garudaCountEl.textContent = garudaCount;
             }
         });
     </script>
