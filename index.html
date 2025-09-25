@@ -68,6 +68,11 @@
             margin: 0 auto 30px;
         }
 
+        .manual-section {
+            max-width: 1400px;
+            margin: 0 auto 30px;
+        }
+
         .upload-section {
             background: white;
             padding: 25px;
@@ -117,6 +122,15 @@
             border-color: #1B5E20;
         }
 
+        .upload-area.purple-border {
+            border-color: #673AB7;
+        }
+
+        .upload-area.purple-border:hover {
+            background-color: #f3e5f5;
+            border-color: #512DA8;
+        }
+
         .upload-area i {
             font-size: 48px;
             color: #2196F3;
@@ -135,6 +149,10 @@
             color: #2E7D32;
         }
 
+        .upload-area.purple-border i {
+            color: #673AB7;
+        }
+
         .upload-area h3 {
             margin-bottom: 10px;
             color: #0D47A1;
@@ -150,6 +168,10 @@
 
         .upload-area.green-border h3 {
             color: #1B5E20;
+        }
+
+        .upload-area.purple-border h3 {
+            color: #512DA8;
         }
 
         .upload-area p {
@@ -205,6 +227,14 @@
             background: #1B5E20;
         }
 
+        .btn.purple-btn {
+            background: #673AB7;
+        }
+
+        .btn.purple-btn:hover {
+            background: #512DA8;
+        }
+
         .btn:hover {
             background: #1976D2;
             transform: translateY(-2px);
@@ -224,6 +254,36 @@
             margin: 0 auto;
         }
 
+        .tab-navigation {
+            display: flex;
+            background: #f5faff;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 15px 25px;
+            cursor: pointer;
+            font-size: 16px;
+            color: #5f6368;
+            transition: color 0.3s;
+        }
+
+        .tab-btn.active {
+            color: #0D47A1;
+            border-bottom: 3px solid #2196F3;
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
         .results-header {
             background: linear-gradient(135deg, #1565C0, #0D47A1);
             color: white;
@@ -235,6 +295,13 @@
 
         .results-header h2 {
             font-size: 22px;
+        }
+
+        .results-header input {
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+            margin-left: 10px;
         }
 
         .results-content {
@@ -269,7 +336,7 @@
 
         .stats {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 15px;
             margin-top: 20px;
         }
@@ -286,6 +353,10 @@
             border-left: 4px solid #2E7D32;
         }
 
+        .stat-box.purple-border {
+            border-left: 4px solid #673AB7;
+        }
+
         .stat-box h3 {
             font-size: 14px;
             color: #5f6368;
@@ -296,6 +367,52 @@
             font-size: 24px;
             font-weight: 700;
             color: #0D47A1;
+        }
+
+        .manual-form {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .manual-form label {
+            align-self: center;
+            color: #5f6368;
+            flex: 0 0 auto;
+        }
+
+        .manual-form input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            flex: 1 1 150px;
+        }
+
+        .summary-section {
+            margin-top: 20px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 5px;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .success {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .error {
+            background: #f44336;
+            color: white;
         }
 
         footer {
@@ -314,10 +431,50 @@
             .stats {
                 grid-template-columns: 1fr;
             }
+
+            .manual-form {
+                flex-direction: column;
+            }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 400px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
+    <div id="notification" class="notification"></div>
     <header>
         <div class="container">
             <div class="header-content">
@@ -380,34 +537,126 @@
             </div>
         </div>
 
-        <div class="results-section">
-            <div class="results-header">
-                <h2>Processed Data</h2>
-                <div>
-                    <span id="rowCount">0 rows</span>
-                    <button class="btn" id="exportBtn" style="margin-left: 10px;"><i class="fas fa-download"></i> Export to Excel</button>
+        <div class="manual-section">
+            <div class="upload-section">
+                <div class="upload-area purple-border" id="manualArea">
+                    <i class="fas fa-plus"></i>
+                    <h3>Manual Entry</h3>
+                    <p>Enter details manually</p>
+                    <div class="manual-form">
+                        <label for="transNo">Transaction No:</label>
+                        <input type="text" id="transNo">
+                        <label for="status">Status:</label>
+                        <input type="text" id="status">
+                        <label for="payMode">Payment Mode:</label>
+                        <input type="text" id="payMode">
+                        <label for="collAmt">Collected Amount:</label>
+                        <input type="text" id="collAmt">
+                        <label for="remName">Remitter Name:</label>
+                        <input type="text" id="remName">
+                        <label for="userId">User Id:</label>
+                        <input type="text" id="userId">
+                    </div>
+                    <button class="btn purple-btn" id="addManualBtn">
+                        <i class="fas fa-plus"></i> Add Entry
+                    </button>
                 </div>
             </div>
-            <div class="results-content">
-                <div class="stats">
-                    <div class="stat-box">
-                        <h3>Wadi Count</h3>
-                        <p id="wadiCount">0</p>
-                    </div>
-                    <div class="stat-box">
-                        <h3>Maji Count</h3>
-                        <p id="majiCount">0</p>
-                    </div>
-                    <div class="stat-box">
-                        <h3>WU Count</h3>
-                        <p id="wuCount">0</p>
-                    </div>
-                    <div class="stat-box green-border">
-                        <h3>Garuda Count</h3>
-                        <p id="garudaCount">0</p>
+        </div>
+
+        <div class="results-section">
+            <div class="tab-navigation">
+                <button class="tab-btn active" data-tab="data">Processed Data</button>
+                <button class="tab-btn" data-tab="summary">Payment Mode Summary</button>
+                <button class="tab-btn" data-tab="telegram">Telegram Notifications</button>
+            </div>
+            <div class="tab-content active" id="data-tab">
+                <div class="results-header">
+                    <h2>Processed Data</h2>
+                    <div>
+                        <span id="rowCount">0 rows</span>
+                        <input type="text" id="searchInput" placeholder="Search...">
+                        <button class="btn" id="exportBtn" style="margin-left: 10px;"><i class="fas fa-download"></i> Export to Excel</button>
                     </div>
                 </div>
-                <div id="tableContainer"></div>
+                <div class="results-content">
+                    <div class="stats">
+                        <div class="stat-box">
+                            <h3>Wadi Count</h3>
+                            <p id="wadiCount">0</p>
+                        </div>
+                        <div class="stat-box">
+                            <h3>Maji Count</h3>
+                            <p id="majiCount">0</p>
+                        </div>
+                        <div class="stat-box">
+                            <h3>WU Count</h3>
+                            <p id="wuCount">0</p>
+                        </div>
+                        <div class="stat-box green-border">
+                            <h3>Garuda Count</h3>
+                            <p id="garudaCount">0</p>
+                        </div>
+                        <div class="stat-box purple-border">
+                            <h3>Manual Count</h3>
+                            <p id="manualCount">0</p>
+                        </div>
+                    </div>
+                    <div id="tableContainer"></div>
+                </div>
+            </div>
+            <div class="tab-content" id="summary-tab">
+                <div class="results-header">
+                    <h2>Payment Mode Summary</h2>
+                    <div>
+                        <button class="btn" id="exportSummaryBtn" style="margin-left: 10px;"><i class="fas fa-download"></i> Export Summary to Excel</button>
+                    </div>
+                </div>
+                <div class="results-content">
+                    <div id="summaryTableContainer"></div>
+                    <div class="summary-section">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Grand Total</th>
+                                    <th>Total Sum of Items</th>
+                                    <th>Total Sum of Collected Amount</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Overall Total</td>
+                                    <td id="totalItems">0</td>
+                                    <td id="totalCollected">0.00</td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-content" id="telegram-tab">
+                <div class="results-header">
+                    <h2>Telegram Notifications</h2>
+                    <div>
+                        <button class="btn" id="sendAllBtn"><i class="fas fa-paper-plane"></i> Send All</button>
+                    </div>
+                </div>
+                <div class="results-content">
+                    <div class="upload-section">
+                        <div class="upload-area purple-border" id="summaryDropZone">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <h3>Upload Summary Excel File</h3>
+                            <p>Drag & drop your file here or click to browse</p>
+                            <input type="file" id="summaryFileInput" accept=".xlsx, .xls" hidden>
+                            <button class="btn purple-btn" onclick="document.getElementById('summaryFileInput').click()">
+                                <i class="fas fa-upload"></i> Browse Files
+                            </button>
+                        </div>
+                    </div>
+                    <div id="telegramTableContainer"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -417,6 +666,15 @@
             <p>Thank you</p>
         </div>
     </footer>
+
+    <div id="chatModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <label for="chatIdInput">Telegram Group Chat ID:</label>
+            <input type="text" id="chatIdInput" placeholder="e.g., -123456789">
+            <button class="btn" id="sendMessageBtn"><i class="fas fa-paper-plane"></i> Send</button>
+        </div>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -428,18 +686,154 @@
             const processWuBtn = document.getElementById('processWuBtn');
             const garudaTextInput = document.getElementById('garudaTextInput');
             const processGarudaBtn = document.getElementById('processGarudaBtn');
+            const transNoInput = document.getElementById('transNo');
+            const statusInput = document.getElementById('status');
+            const payModeInput = document.getElementById('payMode');
+            const collAmtInput = document.getElementById('collAmt');
+            const remNameInput = document.getElementById('remName');
+            const userIdInput = document.getElementById('userId');
+            const addManualBtn = document.getElementById('addManualBtn');
             const tableContainer = document.getElementById('tableContainer');
+            const summaryTableContainer = document.getElementById('summaryTableContainer');
             const rowCount = document.getElementById('rowCount');
             const wadiCountEl = document.getElementById('wadiCount');
             const majiCountEl = document.getElementById('majiCount');
             const wuCountEl = document.getElementById('wuCount');
             const garudaCountEl = document.getElementById('garudaCount');
+            const manualCountEl = document.getElementById('manualCount');
             const exportBtn = document.getElementById('exportBtn');
+            const exportSummaryBtn = document.getElementById('exportSummaryBtn');
+            const searchInput = document.getElementById('searchInput');
             let wadiData = [];
             let majiData = [];
             let wuData = [];
             let garudaData = [];
+            let manualData = [];
             let exportData = [];
+            let summaryExportData = [];
+            let summaryTelegramData = [];
+
+            const staffMap = new Map([
+                ['7557', 'TANGO'],
+                ['7875', 'RAHAMANIYA KB'],
+                ['7075', 'MAMAK PALACE'],
+                ['7753', 'NAZMUL KB'],
+                ['7475', 'NAZMUL SERIA'],
+                ['7867', 'NIZU TANIA'],
+                ['7107', 'SIGNATURE'],
+                ['7961', 'SUNGAI LIANG SIGNATURE'],
+                ['7941', 'ENERGY GLOBAL SERIA'],
+                ['7515', 'MERAZ LUMUT'],
+                ['7027', 'MANINA LUMUT'],
+                ['7575', 'GULZAR SG LIANG'],
+                ['7012', 'REDEOAN'],
+                ['7611', 'YEASIN PANDAN 5'],
+                ['7008', 'IKBAL KB'],
+                ['7669', 'SYKT AMINA TUTONG'],
+                ['7523', 'BIPUL'],
+                ['7121', 'NASER KB NKB'],
+                ['7631', 'AL REJEK'],
+                ['7287', 'ISMACO'],
+                ['7937', 'SIDDIK AIRTEL'],
+                ['1219', 'ROSANI KUILAP'],
+                ['1715', 'MAROA AIRTEL'],
+                ['1756', 'DELIMA ORDERS'],
+                ['1604', 'MUARA MAJAHAR'],
+                ['1420', 'SIKTO'],
+                ['1136', 'JHN'],
+                ['1762', 'SAABIR MUARA'],
+                ['1244', 'INAS ENT'],
+                ['1013', 'RN MUARA'],
+                ['1488', 'SUNTAI MUARA'],
+                ['1375', 'WAZIR KIULAP'],
+                ['1199', 'MADANG'],
+                ['1314', 'DELIMA FARITH'],
+                ['1079', 'ST SAMAYA'],
+                ['1070', 'DEKSHA KIULAP'],
+                ['1200', 'SYKT. SALHA ARYSSA'],
+                ['1178', 'LSB DELIMA'],
+                ['1435', 'AFFIFAH'],
+                ['1353', 'DIANA KIULAP'],
+                ['1205', 'NOORIYA'],
+                ['1069', 'PRIYA JAYA'],
+                ['1305', 'MEERA TRADING'],
+                ['1315', 'SURESH GUNA'],
+                ['1807', 'SARWAN AIRTEL'],
+                ['2724', 'V MART'],
+                ['2848', 'SPS AZMI'],
+                ['2838', 'IQBAL SHOP'],
+                ['2951', 'ANIKA TUJUAN'],
+                ['2147', 'AMYMASS'],
+                ['2910', 'JUWAIRIYAH'],
+                ['2686', 'SHAFITH BAN 2A'],
+                ['2824', 'KOSS KANI'],
+                ['2423', 'POOMAN'],
+                ['2279', 'NA BERIBI'],
+                ['2288', 'AMIR HAMZA'],
+                ['2665', 'BAKKAR'],
+                ['2995', 'RADIAH KASSIM'],
+                ['2095', 'WK 2'],
+                ['2223', 'WK 3'],
+                ['2386', 'RAUF'],
+                ['2512', 'RINDU RASA'],
+                ['2076', 'CRIS'],
+                ['2627', 'RENEN'],
+                ['2371', 'HUFAINAZ'],
+                ['2911', 'NOORJUMANA'],
+                ['2572', 'SHA HUSSAINY'],
+                ['2905', 'NIRWAN'],
+                ['2606', 'RIPAS'],
+                ['2407', 'RAUYAH'],
+                ['2607', 'AL MADINA RESTAURANT'],
+                ['2714', 'SYKT SHARINUR'],
+                ['2307', 'DUMPUNA'],
+                ['2805', 'AMIRUN AIRTEL'],
+                ['2515', 'SYKT NURSAIN'],
+                ['2790', 'MTK AIRTEL'],
+                ['3343', 'SELVA'],
+                ['3118', 'MOLLAH SDN BHD'],
+                ['3010', 'MJB TUTONG'],
+                ['3160', 'ROSNAFI'],
+                ['3563', 'IRSATH LAMUNIN'],
+                ['3817', 'FAMOUS'],
+                ['3649', 'GOLDEN'],
+                ['3502', 'DHAMU TUTONG'],
+                ['3300', 'NANIK KIUDANG'],
+                ['3401', 'HJH ASBAH'],
+                ['3919', 'LAMUNIN HAFSI'],
+                ['3414', 'AZ SPORTS'],
+                ['3442', 'AL JASIRA'],
+                ['3566', 'SYKT OSMAN'],
+                ['3164', 'SHAQRA TUTONG'],
+                ['3194', 'BARONA'],
+                ['3105', 'AZMEE TUTONG'],
+                ['3055', 'MEHBOOBA LAMUNIN'],
+                ['3650', 'PLATINUM'],
+                ['3083', 'SYARIKAT SARIAH'],
+                ['4808', 'IZAH'],
+                ['4120', 'SUJ AIRTEL'],
+                ['4121', 'SUJEL AIRTEL'],
+                ['4020', 'NALENG'],
+                ['4333', 'TOUR'],
+                ['4114', 'SAFI AIRTEL'],
+                ['4185', 'HAJA AIRTEL'],
+                ['4007', 'JIO RAJ'],
+                ['9441', 'JP'],
+                ['9756', 'AB'],
+                ['8404', 'AF'],
+                ['6819', 'BS']
+            ]);
+
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    document.getElementById(btn.dataset.tab + '-tab').classList.add('active');
+                });
+            });
 
             wadiFileInput.addEventListener('change', function(e) {
                 processExcelFile(e.target.files[0], 'wadi');
@@ -486,9 +880,31 @@
             processWuBtn.addEventListener('click', processWuText);
             processGarudaBtn.addEventListener('click', processGarudaText);
 
+            addManualBtn.addEventListener('click', function() {
+                const transNo = transNoInput.value.trim();
+                const status = statusInput.value.trim();
+                const payMode = payModeInput.value.trim();
+                const collAmt = collAmtInput.value.trim();
+                const remName = remNameInput.value.trim();
+                const userId = userIdInput.value.trim();
+                if (!transNo || !status || !payMode || !collAmt || !remName || !userId) {
+                    showNotification('Please fill all fields.', 'error');
+                    return;
+                }
+                manualData.push(['1', transNo, status, payMode, collAmt, remName, userId]);
+                transNoInput.value = '';
+                statusInput.value = '';
+                payModeInput.value = '';
+                collAmtInput.value = '';
+                remNameInput.value = '';
+                userIdInput.value = '';
+                updateDisplay();
+                showNotification('Manual entry added successfully', 'success');
+            });
+
             exportBtn.addEventListener('click', function() {
                 if (exportData.length === 0) {
-                    alert('No data to export. Please process some data first.');
+                    showNotification('No data to export. Please process some data first.', 'error');
                     return;
                 }
                 const ws = XLSX.utils.aoa_to_sheet(exportData);
@@ -500,6 +916,43 @@
                     String(today.getDate()).padStart(2, '0');
                 XLSX.writeFile(wb, `Processed_Data_${formattedDate}.xlsx`);
             });
+
+            exportSummaryBtn.addEventListener('click', function() {
+                if (summaryExportData.length === 0) {
+                    showNotification('No summary data to export.', 'error');
+                    return;
+                }
+                const ws = XLSX.utils.aoa_to_sheet(summaryExportData);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Summary Data');
+                const today = new Date();
+                const formattedDate = today.getFullYear() + '-' + 
+                    String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                    String(today.getDate()).padStart(2, '0');
+                XLSX.writeFile(wb, `Summary_Data_${formattedDate}.xlsx`);
+            });
+
+            searchInput.addEventListener('keyup', function() {
+                const filter = searchInput.value.toLowerCase();
+                const table = tableContainer.querySelector('table');
+                if (!table) return;
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    const text = Array.from(row.querySelectorAll('td')).map(td => td.textContent.toLowerCase()).join(' ');
+                    row.style.display = text.includes(filter) ? '' : 'none';
+                });
+            });
+
+            function showNotification(message, type) {
+                const notif = document.getElementById('notification');
+                notif.textContent = message;
+                notif.classList.remove('success', 'error');
+                notif.classList.add(type);
+                notif.style.display = 'block';
+                setTimeout(() => {
+                    notif.style.display = 'none';
+                }, 3000);
+            }
 
             function processExcelFile(file, type) {
                 if (!file) return;
@@ -517,9 +970,10 @@
                             majiData = processedData;
                         }
                         updateDisplay();
+                        showNotification(`${type.charAt(0).toUpperCase() + type.slice(1)} file processed successfully`, 'success');
                     } catch (error) {
                         console.error('Error processing file:', error);
-                        alert('Error processing Excel file. Please make sure it is a valid Excel file.');
+                        showNotification('Error processing Excel file. Please make sure it is a valid Excel file.', 'error');
                     }
                 };
                 reader.readAsArrayBuffer(file);
@@ -545,7 +999,11 @@
                 const processedData = filteredData.map(row => {
                     const newRow = ['1']; // Fixed Item No
                     indices.forEach(idx => {
-                        newRow.push(row[idx]);
+                        let value = row[idx];
+                        if (idx === 7 || idx === 6) { // Assuming collected amount index
+                            value = String(value).replace(/BND/g, '').trim();
+                        }
+                        newRow.push(value);
                     });
                     return newRow;
                 });
@@ -555,13 +1013,13 @@
             function processWuText() {
                 const text = wuTextInput.value.trim();
                 if (!text) {
-                    alert('Please paste some text content first.');
+                    showNotification('Please paste some text content first.', 'error');
                     return;
                 }
 
                 const lines = text.split('\n');
                 if (lines.length < 2) {
-                    alert('Not enough data to create a table. Please paste more lines.');
+                    showNotification('Not enough data to create a table. Please paste more lines.', 'error');
                     return;
                 }
 
@@ -588,24 +1046,26 @@
                 }
 
                 if (dataRows.length === 0) {
-                    alert('No valid data rows to display.');
+                    showNotification('No valid data rows to display.', 'error');
                     return;
                 }
 
                 wuData = dataRows;
                 updateDisplay();
+                wuTextInput.style.display = 'none';
+                showNotification('WU data added successfully', 'success');
             }
 
             function processGarudaText() {
                 const text = garudaTextInput.value.trim();
                 if (!text) {
-                    alert('Please paste some text content first.');
+                    showNotification('Please paste some text content first.', 'error');
                     return;
                 }
 
                 const lines = text.split('\n');
                 if (lines.length < 1) {
-                    alert('Not enough data to create a table. Please paste more lines.');
+                    showNotification('Not enough data to create a table. Please paste more lines.', 'error');
                     return;
                 }
 
@@ -631,12 +1091,14 @@
                 }
 
                 if (dataRows.length === 0) {
-                    alert('No valid data rows to display.');
+                    showNotification('No valid data rows to display.', 'error');
                     return;
                 }
 
                 garudaData = dataRows;
                 updateDisplay();
+                garudaTextInput.style.display = 'none';
+                showNotification('Garuda data added successfully', 'success');
             }
 
             function parseLine(line) {
@@ -644,13 +1106,33 @@
             }
 
             function updateDisplay() {
-                const combinedData = [...wadiData, ...majiData, ...wuData, ...garudaData];
+                let combinedData = [...wadiData, ...majiData, ...wuData, ...garudaData, ...manualData];
                 exportData = [];
+                summaryExportData = [['Payment Mode', 'Sum of Items', 'Sum of Collected Amount', 'Staff Name']];
                 if (combinedData.length === 0) {
                     tableContainer.innerHTML = '<p>No data to display</p>';
-                    updateStats(0, 0, 0, 0);
+                    summaryTableContainer.innerHTML = '';
+                    updateStats(0, 0, 0, 0, 0);
                     return;
                 }
+
+                combinedData.sort((a, b) => {
+                    const pa = a[3] || '';
+                    const pb = b[3] || '';
+                    const isNumA = !isNaN(parseFloat(pa)) && isFinite(pa);
+                    const isNumB = !isNaN(parseFloat(pb)) && isFinite(pb);
+                    if (isNumA && isNumB) {
+                        return parseFloat(pa) - parseFloat(pb);
+                    } else if (isNumA && !isNumB) {
+                        return -1;
+                    } else if (!isNumA && isNumB) {
+                        return 1;
+                    } else {
+                        return pa.localeCompare(pb);
+                    }
+                });
+
+                // Build main table
                 const table = document.createElement('table');
                 const thead = document.createElement('thead');
                 const headerRow = document.createElement('tr');
@@ -679,15 +1161,245 @@
                 table.appendChild(tbody);
                 tableContainer.innerHTML = '';
                 tableContainer.appendChild(table);
-                updateStats(wadiData.length, majiData.length, wuData.length, garudaData.length);
+
+                // Build summary table
+                const summaryMap = new Map();
+                combinedData.forEach(row => {
+                    const payMode = String(row[3] || 'Unknown').trim();
+                    const amount = parseFloat(row[4]) || 0;
+                    if (summaryMap.has(payMode)) {
+                        const val = summaryMap.get(payMode);
+                        val.count += 1;
+                        val.sum += amount;
+                    } else {
+                        summaryMap.set(payMode, { count: 1, sum: amount });
+                    }
+                });
+
+                const summaryTable = document.createElement('table');
+                const summaryThead = document.createElement('thead');
+                const summaryHeaderRow = document.createElement('tr');
+                ['Payment Mode', 'Sum of Items', 'Sum of Collected Amount', 'Staff Name'].forEach(text => {
+                    const th = document.createElement('th');
+                    th.textContent = text;
+                    summaryHeaderRow.appendChild(th);
+                });
+                summaryThead.appendChild(summaryHeaderRow);
+                summaryTable.appendChild(summaryThead);
+                const summaryTbody = document.createElement('tbody');
+                [...summaryMap.entries()].sort((a, b) => {
+                    const pa = a[0];
+                    const pb = b[0];
+                    const isNumA = !isNaN(parseFloat(pa)) && isFinite(pa);
+                    const isNumB = !isNaN(parseFloat(pb)) && isFinite(pb);
+                    if (isNumA && isNumB) {
+                        return parseFloat(pa) - parseFloat(pb);
+                    } else if (isNumA && !isNumB) {
+                        return -1;
+                    } else if (!isNumA && isNumB) {
+                        return 1;
+                    } else {
+                        return pa.localeCompare(pb);
+                    }
+                }).forEach(([payMode, {count, sum}]) => {
+                    if (count > 0) {
+                        const tr = document.createElement('tr');
+                        const staffName = staffMap.get(payMode) || 'Unknown';
+                        [payMode, count, sum.toFixed(2), staffName].forEach(val => {
+                            const td = document.createElement('td');
+                            td.textContent = val;
+                            tr.appendChild(td);
+                        });
+                        summaryTbody.appendChild(tr);
+                        summaryExportData.push([payMode, count, sum.toFixed(2), staffName]);
+                    }
+                });
+                summaryTable.appendChild(summaryTbody);
+                summaryTableContainer.innerHTML = '';
+                summaryTableContainer.appendChild(summaryTable);
+
+                
+                const totalItems = [...summaryMap.values()].reduce((sum, val) => sum + val.count, 0);
+                const totalCollected = [...summaryMap.values()].reduce((sum, val) => sum + val.sum, 0);
+                document.getElementById('totalItems').textContent = totalItems;
+                document.getElementById('totalCollected').textContent = totalCollected.toFixed(2);
+                summaryExportData.push(['Grand Total', totalItems, totalCollected.toFixed(2), '']);
+
+                updateStats(wadiData.length, majiData.length, wuData.length, garudaData.length, manualData.length);
             }
 
-            function updateStats(wadiCount, majiCount, wuCount, garudaCount) {
-                rowCount.textContent = `${wadiCount + majiCount + wuCount + garudaCount} rows`;
+            function updateStats(wadiCount, majiCount, wuCount, garudaCount, manualCount) {
+                rowCount.textContent = `${wadiCount + majiCount + wuCount + garudaData.length + manualCount} rows`;
                 wadiCountEl.textContent = wadiCount;
                 majiCountEl.textContent = majiCount;
                 wuCountEl.textContent = wuCount;
                 garudaCountEl.textContent = garudaCount;
+                manualCountEl.textContent = manualCount;
+            }
+
+            // Telegram tab functionality
+            const summaryFileInput = document.getElementById('summaryFileInput');
+            const summaryDropZone = document.getElementById('summaryDropZone');
+            const modal = document.getElementById('chatModal');
+            const closeBtn = document.querySelector('.close');
+            const chatIdInput = document.getElementById('chatIdInput');
+            const sendMessageBtn = document.getElementById('sendMessageBtn');
+            const sendAllBtn = document.getElementById('sendAllBtn');
+            let currentStaffData;
+
+            closeBtn.addEventListener('click', () => modal.style.display = 'none');
+
+            window.addEventListener('click', (e) => {
+                if (e.target == modal) modal.style.display = 'none';
+            });
+
+            sendMessageBtn.addEventListener('click', async () => {
+                const chatId = chatIdInput.value.trim();
+                if (!chatId) {
+                    showNotification('Please enter chat ID', 'error');
+                    return;
+                }
+                const token = '7641274191:AAEDkIb6LY-BPtctpsYSjljEFNqP8izoUFM';
+                const url = `https://api.telegram.org/bot${token}/sendMessage`;
+                const message = formatMessage(currentStaffData);
+                try {
+                    const response = await fetch(`${url}?chat_id=${chatId}&text=${encodeURIComponent(message)}`);
+                    const data = await response.json();
+                    if (data.ok) {
+                        showNotification('Message sent successfully', 'success');
+                    } else {
+                        showNotification('Error sending message: ' + data.description, 'error');
+                    }
+                } catch (error) {
+                    showNotification('Error: ' + error.message, 'error');
+                }
+                modal.style.display = 'none';
+                chatIdInput.value = '';
+            });
+
+            sendAllBtn.addEventListener('click', async () => {
+                if (summaryTelegramData.length === 0) {
+                    showNotification('No summary data loaded.', 'error');
+                    return;
+                }
+                const chatId = '1538117967';
+                const token = '7641274191:AAEDkIb6LY-BPtctpsYSjljEFNqP8izoUFM';
+                const url = `https://api.telegram.org/bot${token}/sendMessage`;
+                const message = formatAllMessage(summaryTelegramData);
+                try {
+                    const response = await fetch(`${url}?chat_id=${chatId}&text=${encodeURIComponent(message)}`);
+                    const data = await response.json();
+                    if (data.ok) {
+                        showNotification('All details sent successfully', 'success');
+                    } else {
+                        showNotification('Error sending message: ' + data.description, 'error');
+                    }
+                } catch (error) {
+                    showNotification('Error: ' + error.message, 'error');
+                }
+            });
+
+            function formatMessage(data) {
+                return `Staff: ${data.staffName}
+Payment Mode: ${data.payMode}
+Sum of Items: ${data.items}
+Collected Amount: ${data.amount}`;
+            }
+
+            function formatAllMessage(data) {
+                let msg = 'Summary Data:\n';
+                for (let i = 1; i < data.length - 1; i++) {
+                    const row = data[i];
+                    msg += `${row[3]} (${row[0]}): Items ${row[1]}, Amount ${row[2]}\n`;
+                }
+                if (data.length > 1) {
+                    const grand = data[data.length - 1];
+                    msg += `\nGrand Total: Items ${grand[1]}, Amount ${grand[2]}`;
+                }
+                return msg;
+            }
+
+            summaryFileInput.addEventListener('change', function(e) {
+                processSummaryFile(e.target.files[0]);
+            });
+
+            summaryDropZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                summaryDropZone.style.backgroundColor = '#f3e5f5';
+            });
+
+            summaryDropZone.addEventListener('dragleave', function() {
+                summaryDropZone.style.backgroundColor = '#f9fcff';
+            });
+
+            summaryDropZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                summaryDropZone.style.backgroundColor = '#f9fcff';
+                if (e.dataTransfer.files.length) {
+                    processSummaryFile(e.dataTransfer.files[0]);
+                }
+            });
+
+            function processSummaryFile(file) {
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                        summaryTelegramData = jsonData;
+                        displayTelegramTable(jsonData);
+                        showNotification('Summary file processed successfully', 'success');
+                    } catch (error) {
+                        console.error('Error processing file:', error);
+                        showNotification('Error processing Excel file. Please make sure it is a valid Excel file.', 'error');
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            }
+
+            function displayTelegramTable(data) {
+                const filteredData = data.filter(row => row.length >= 4 && row[0] !== 'Payment Mode');
+                const table = document.createElement('table');
+                const thead = document.createElement('thead');
+                const headerRow = document.createElement('tr');
+                ['Payment Mode', 'Sum of Items', 'Sum of Collected Amount', 'Staff Name'].forEach(text => {
+                    const th = document.createElement('th');
+                    th.textContent = text;
+                    headerRow.appendChild(th);
+                });
+                thead.appendChild(headerRow);
+                table.appendChild(thead);
+                const tbody = document.createElement('tbody');
+                filteredData.forEach(row => {
+                    const tr = document.createElement('tr');
+                    row.forEach(cell => {
+                        const td = document.createElement('td');
+                        td.textContent = cell;
+                        tr.appendChild(td);
+                    });
+                    const staffTd = tr.querySelectorAll('td')[3];
+                    if (row[0] !== 'Grand Total' && staffTd.textContent.trim() !== '') {
+                        staffTd.style.cursor = 'pointer';
+                        staffTd.style.color = '#2196F3';
+                        staffTd.addEventListener('click', () => {
+                            currentStaffData = {
+                                payMode: row[0],
+                                items: row[1],
+                                amount: row[2],
+                                staffName: row[3]
+                            };
+                            modal.style.display = 'block';
+                        });
+                    }
+                    tbody.appendChild(tr);
+                });
+                table.appendChild(tbody);
+                const container = document.getElementById('telegramTableContainer');
+                container.innerHTML = '';
+                container.appendChild(table);
             }
         });
     </script>
